@@ -1,3 +1,5 @@
+const { parse } = require('path');
+
 (function b() {
     window._logLine("-=-=-= Early loader =-=-=-");
 
@@ -69,6 +71,7 @@
         $parsers: new Map(),
         $rollup: null,
     }; // BaseModLoader object
+    alert(JSON.stringify(process.versions));
 
     /* Install the argv handler and shadow the true argv object to allow the base game to work normally */ {
         let key = window.nw.App.argv[0];
