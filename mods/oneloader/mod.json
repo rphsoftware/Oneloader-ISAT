@@ -11,9 +11,7 @@
     ],
     "files":{
         "plugins":[
-            "oneloader-assistant.js",
-            "oneloader-version-text.js",
-            "oneloader-detect-gomori.js"
+
         ]
     },
     "asyncExec":[

@@ -34,4 +34,21 @@
             }
         });
     }
+
+    let ols = PluginManager.loadScript;
+    window.$modLoader.pluginPromises = [];
+    PluginManager.loadScript = function(name) {
+        var url = this._path + name;
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = url;
+        script.async = false;
+        script.onerror = this.onError.bind(this);
+        script._url = url;
+        document.body.appendChild(script);
+
+        window.$modLoader.pluginPromises.push(new Promise(resolve => {
+            script.onload = resolve;
+        }))
+    }
 }

@@ -7,6 +7,7 @@ const { parse } = require('path');
 
     const StreamZip = require('./modloader/lib/node_stream_zip.js');
     const zlib = require('zlib');
+    const crypto = require('crypto');
     const native_fs = require('fs');
     const util = require('util');
     const async_fs = { // old node polyfill bruh
@@ -71,7 +72,6 @@ const { parse } = require('path');
         $parsers: new Map(),
         $rollup: null,
     }; // BaseModLoader object
-    alert(JSON.stringify(process.versions));
     $modLoader.realArgv = window.nw.App.argv;
 
     if ($modLoader.realArgv.includes("--no-mods")) {
