@@ -1,6 +1,41 @@
 function _modLoader_install_debugger_vfs(shadowfs, nativefs) {
     $modLoader.$log("[VFS_WEB] Starting HTTP server");
 
+    function readRangeHeader(range, totalLength) {
+        /*
+         * Example of the method 'split' with regular expression.
+         * 
+         * Input: bytes=100-200
+         * Output: [null, 100, 200, null]
+         * 
+         * Input: bytes=-200
+         * Output: [null, null, 200, null]
+         */
+
+        if (range == null || range.length == 0)
+            return null;
+
+        var array = range.split(/bytes=([0-9]*)-([0-9]*)/);
+        var start = parseInt(array[1]);
+        var end = parseInt(array[2]);
+        var result = {
+            Start: isNaN(start) ? 0 : start,
+            End: isNaN(end) ? (totalLength - 1) : end
+        };
+        
+        if (!isNaN(start) && isNaN(end)) {
+            result.Start = start;
+            result.End = totalLength - 1;
+        }
+
+        if (isNaN(start) && !isNaN(end)) {
+            result.Start = totalLength - end;
+            result.End = totalLength - 1;
+        }
+
+        return result;
+    }
+
     let SERVER_KEY = require('crypto').randomBytes(32).toString('hex');
     let TEST_KEY   = require('crypto').randomBytes(32).toString('hex');
     let testKeyChecker;
@@ -9,6 +44,7 @@ function _modLoader_install_debugger_vfs(shadowfs, nativefs) {
     const urlTester = new RegExp(`^/${SERVER_KEY}`);
     async function requestListener(req, res) {
         try {
+            res.setHeader("Accept-Ranges", "bytes");
             if (req.url === `/${SERVER_KEY}/${TEST_KEY}`) {
                 res.setHeader("Content-Type", "application/json");
                 res.writeHead(200);
@@ -43,11 +79,26 @@ function _modLoader_install_debugger_vfs(shadowfs, nativefs) {
 
                 res.setHeader("Content-Type", type);
                 res.setHeader("Access-Control-Allow-Origin", window.location.origin);
-                res.writeHead(200);
-                res.end(data);
+
+
+                let rangeRequest = readRangeHeader(req.headers["range"], data.length);
+                if (rangeRequest == null) {
+                    res.setHeader("Content-Length", data.length);
+                    res.writeHead(200);
+                    res.end(data);
+                } else {
+                    res.setHeader("Content-Range", "bytes " + rangeRequest.Start + "-" + rangeRequest.End + "/" + data.length);
+                    res.setHeader("Content-Length", (
+                        rangeRequest.End - rangeRequest.Start + 1
+                    ));
+                    res.writeHead(206);
+
+                    res.end(data.subarray(rangeRequest.Start, rangeRequest.End + 1));
+                }
                 
                 $modLoader.$vfsTrace(`[VFS_WEB] Got request ${req.url} (${requestPath})`);
             } catch(E) {
+                console.log(E);
                 res.writeHead(404);
                 res.end('');
             }
