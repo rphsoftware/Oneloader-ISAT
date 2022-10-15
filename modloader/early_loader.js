@@ -72,20 +72,7 @@ const { parse } = require('path');
         $rollup: null,
     }; // BaseModLoader object
     alert(JSON.stringify(process.versions));
-
-    /* Install the argv handler and shadow the true argv object to allow the base game to work normally */ {
-        let key = window.nw.App.argv[0];
-        $modLoader.realArgv = window.nw.App.argv;
-        window.nw.App = new Proxy(window.nw.App, {
-            get(t, p, r) {
-                if (p === "argv") {
-                    return [key];
-                } else {
-                    return Reflect.get(...arguments);
-                }
-            }
-        });
-    }
+    $modLoader.realArgv = window.nw.App.argv;
 
     if ($modLoader.realArgv.includes("--no-mods")) {
         $modLoader.$log("Starting with no mods");

@@ -1,6 +1,4 @@
 function _modLoader_install_debugger_vfs(shadowfs, nativefs) {
-    if ($modLoader.$nwMajor >= 45) { alert("Versions of NW newer than 0.45.0 are not supported!"); throw new Error();}
-
     async function buildResponseBody(data) {
         $modLoader.$vfsTrace("WEB REQUEST " + JSON.stringify(data));
         let url = new URL(data.request.url);
